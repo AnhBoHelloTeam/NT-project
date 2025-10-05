@@ -1,0 +1,27 @@
+version: '3.8'
+
+services:
+  crud-app:
+    build: 
+      context: .
+      dockerfile: Dockerfile
+    image: ${DOCKER_USERNAME}/crud-app:latest
+    container_name: crud-app
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+    ports:
+      - "3000:3000"
+    networks:
+      - app-network
+    restart: always
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('http').get('http://localhost:3000/health', (res) => { process.exit(res.statusCode === 200 ? 0 : 1) })"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+networks:
+  app-network:
+    driver: bridge

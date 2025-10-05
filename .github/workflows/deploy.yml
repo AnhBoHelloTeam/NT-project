@@ -1,0 +1,148 @@
+name: CRUD App CI/CD Pipeline
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Checkout source code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install Docker Compose
+        run: |
+          sudo curl -L "https://github.com/docker/compose/releases/download/v2.20.0/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+          sudo chmod +x /usr/local/bin/docker-compose
+          docker-compose --version
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+        with:
+          install: true
+          version: latest
+
+      - name: Cache Docker layers
+        uses: actions/cache@v4
+        with:
+          path: /tmp/.buildx-cache
+          key: ${{ runner.os }}-buildx-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-buildx-
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Build and push Docker images
+        env:
+          DOCKER_BUILDKIT: 1
+          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+        run: |
+          # Build images với BuildKit
+          docker-compose -f docker-compose.yml build \
+            --build-arg BUILDKIT_INLINE_CACHE=1
+          # Push images
+          docker-compose -f docker-compose.yml push crud-app
+        continue-on-error: false
+
+      - name: Deploy to production server
+        uses: appleboy/ssh-action@v1.0.3
+        env:
+          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USERNAME }}
+          key: ${{ secrets.SERVER_SSH_KEY }}
+          script: |
+            cd /home/ubuntu
+            
+            # Tạo thư mục project nếu chưa có
+            mkdir -p NT-project
+            cd NT-project
+            
+            # Write docker-compose file
+            cat > docker-compose.yml << 'EOF'
+            version: '3.8'
+            
+            services:
+              crud-app:
+                image: ${DOCKER_USERNAME}/crud-app:latest
+                container_name: crud-app
+                environment:
+                  - NODE_ENV=production
+                  - PORT=3000
+                ports:
+                  - "80:3000"
+                networks:
+                  - app-network
+                restart: always
+                healthcheck:
+                  test: ["CMD", "node", "-e", "require('http').get('http://localhost:3000/health', (res) => { process.exit(res.statusCode === 200 ? 0 : 1) })"]
+                  interval: 30s
+                  timeout: 10s
+                  retries: 3
+                  start_period: 40s
+            
+            networks:
+              app-network:
+                driver: bridge
+            EOF
+            
+            # Verify docker-compose file
+            docker-compose config || {
+              echo "Error in Docker Compose file:";
+              docker-compose config;
+              exit 1;
+            }
+            
+            # Login to Docker Hub
+            echo "${DOCKER_PASSWORD}" | docker login -u "${DOCKER_USERNAME}" --password-stdin
+            
+            # Pull new images
+            docker-compose pull
+            
+            # Stop and remove old containers if they exist
+            docker ps -a --filter "name=crud-app" --format '{{.ID}}' | xargs -r docker stop || true
+            docker ps -a --filter "name=crud-app" --format '{{.ID}}' | xargs -r docker rm || true
+            
+            # Start containers
+            docker-compose up -d
+            
+            # Clean up old images
+            docker image prune -f
+            
+            # Wait for containers to start and verify deployment
+            timeout 60 bash -c '
+              until docker-compose ps | grep "Up"; do
+                echo "Waiting for containers to start...";
+                sleep 5;
+              done
+            ' || exit 1
+            
+            # Verify deployment
+            sleep 10
+            curl -f http://localhost/health || {
+              echo "Health check failed";
+              docker-compose logs;
+              exit 1;
+            }
+            
+            echo "Deployment completed successfully!"
+
+      - name: Cleanup
+        if: always()
+        run: |
+          docker logout
+          rm -rf /tmp/.buildx-cache
