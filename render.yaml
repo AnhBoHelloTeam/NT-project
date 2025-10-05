@@ -1,0 +1,17 @@
+services:
+  - type: web
+    name: nt-crud-app
+    env: docker
+    plan: free
+    autoDeploy: true
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 3000
+    dockerCommand: "node server.js"
+    # If you prefer to let Render build from Dockerfile in repo
+    # Specify the Dockerfile location
+    dockerfilePath: ./Dockerfile
+    # Expose port 3000 inside container; Render routes via HTTP(S)
