@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blog CI/CD - NT Project</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .blog-container { max-width: 900px; margin: 0 auto; }
+        .blog-card { background: white; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); padding: 30px; }
+        .blog-title { font-size: 2rem; color: #2d3748; margin-bottom: 10px; }
+        .blog-sub { color: #718096; margin-bottom: 20px; }
+        .blog-section { margin: 24px 0; }
+        .blog-section h3 { color: #4a5568; margin-bottom: 10px; }
+        .blog-section p { color: #4a5568; line-height: 1.7; }
+        .code { background: #f7fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; font-size: 13px; overflow: auto; }
+        .back-link { display: inline-flex; align-items: center; gap: 8px; margin-bottom: 16px; color: #4a5568; text-decoration: none; }
+        .back-link:hover { text-decoration: underline; }
+        .note { background: #fefcbf; border: 1px solid #faf089; color: #744210; padding: 10px 12px; border-radius: 8px; }
+        .list { margin-left: 18px; }
+    </style>
+</head>
+<body>
+    <div class="container blog-container">
+        <a href="index.html" class="back-link"><i class="fas fa-arrow-left"></i> Quay lại trang chính</a>
+        <div class="blog-card">
+            <h1 class="blog-title"><i class="fas fa-rocket"></i> CI/CD cho NT Project với Docker, GitHub Actions và Render</h1>
+            <p class="blog-sub">Tổng hợp quy trình triển khai liên tục (CI/CD) mà dự án này đang áp dụng.</p>
+
+            <div class="blog-section">
+                <h3>1) Mục tiêu</h3>
+                <p>
+                    - Tự động kiểm tra dự án khi đẩy code (CI).<br>
+                    - Đóng gói ứng dụng bằng Docker để chạy nhất quán.<br>
+                    - Triển khai thủ công lên Render từ GitHub repo (không cần hạ tầng riêng).<br>
+                </p>
+            </div>
+
+            <div class="blog-section">
+                <h3>2) Cấu trúc chính</h3>
+                <div class="code">.github/workflows/deploy.yml  # Workflow CI an toàn<br>Dockerfile                    # Đóng gói app Node.js<br>docker-compose.yml            # Chạy nhanh local<br>public/                       # Giao diện CRUD<br>server.js                     # API CRUD (Express) </div>
+            </div>
+
+            <div class="blog-section">
+                <h3>3) Quy trình CI (GitHub Actions)</h3>
+                <p>Workflow <strong>CRUD App CI (safe)</strong> gồm các bước:</p>
+                <ul class="list">
+                    <li>Checkout code, cài Node 18</li>
+                    <li>Cài dependencies (npm ci)</li>
+                    <li>Chạy test/lint nếu có (không bắt buộc)</li>
+                    <li>Đánh dấu thành công</li>
+                </ul>
+                <p class="note">Docker build/push có thể bật bổ sung bằng secrets Docker Hub khi cần.</p>
+            </div>
+
+            <div class="blog-section">
+                <h3>4) Docker hóa ứng dụng</h3>
+                <p>Ứng dụng dùng <code>Dockerfile</code> base <code>node:18-alpine</code>, expose cổng 3000, healthcheck tại <code>/health</code>.</p>
+                <div class="code"># Build image<br>docker build -t crud-app:latest .<br><br># Run container<br>docker run --name crud-app --rm -p 3000:3000 crud-app:latest</div>
+            </div>
+
+            <div class="blog-section">
+                <h3>5) Triển khai lên Render (thủ công, không Blueprints)</h3>
+                <ul class="list">
+                    <li>Render → New → Web Service → kết nối repo GitHub</li>
+                    <li>Render tự nhận Dockerfile, đặt Health Path: <code>/health</code></li>
+                    <li>Env: <code>NODE_ENV=production</code>, <code>PORT=3000</code></li>
+                    <li>Deploy và kiểm tra <code>/health</code> trả 200</li>
+                </ul>
+            </div>
+
+            <div class="blog-section">
+                <h3>6) Kiểm thử nhanh</h3>
+                <div class="code"># Local
+node server.js
+# http://localhost:3000 & http://localhost:3000/health
+
+# Docker
+docker build -t crud-app .
+docker run --rm -p 3000:3000 crud-app
+
+# Render (sau deploy)
+curl https://&lt;render-url&gt;/health</div>
+            </div>
+
+            <div class="blog-section">
+                <h3>7) Gợi ý mở rộng</h3>
+                <ul class="list">
+                    <li>Thêm ESLint + Jest và siết CI fail nếu vi phạm</li>
+                    <li>Thêm job Docker build/push khi có Docker Hub token</li>
+                    <li>Thêm Postman Collection trong repo để demo API</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
