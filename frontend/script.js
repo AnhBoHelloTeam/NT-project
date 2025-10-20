@@ -66,9 +66,9 @@ function setupEventListeners() {
 }
 
 // API Configuration
-const API_BASE_URL = process.env.NODE_ENV === 'production' 
-    ? 'http://backend:3000' 
-    : 'http://localhost:3000';
+const API_BASE_URL = window.location.hostname === 'localhost' 
+    ? 'http://localhost:3000' 
+    : 'http://backend:3000';
 
 // API functions
 async function apiCall(url, options = {}) {
