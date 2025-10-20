@@ -1,192 +1,180 @@
-# CRUD App với Docker & GitHub Actions CI/CD
+# 🚀 NT-Project
 
-Ứng dụng CRUD đơn giản sử dụng Node.js, Express, Docker và GitHub Actions để triển khai lên AWS EC2.
+Full-stack CRUD application with Node.js, Express, MongoDB Atlas, and Docker.
 
-## 🚀 Tính năng
+## ✨ Features
 
-- ✅ CRUD operations cho sản phẩm
-- ✅ RESTful API với Express.js
-- ✅ Frontend responsive với HTML/CSS/JavaScript
-- ✅ Docker containerization
-- ✅ CI/CD pipeline với GitHub Actions
-- ✅ Auto deployment lên AWS EC2
+- ✅ **Full CRUD Operations** - Create, Read, Update, Delete products
+- ✅ **RESTful API** - Complete backend API with Express.js
+- ✅ **MongoDB Atlas** - Cloud database integration
+- ✅ **Docker Support** - Containerized application
+- ✅ **CI/CD Pipeline** - GitHub Actions automation
+- ✅ **Test Dashboard** - Built-in testing interface
+- ✅ **Responsive UI** - Modern web interface
 
-/////
-## 📋 Yêu cầu
+## 🏗️ Architecture
 
-- Node.js 18+
-- Docker & Docker Compose
-- GitHub repository
-- Docker Hub account
-- AWS EC2 instance
+```
+┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
+│   Frontend      │    │   Backend       │    │   MongoDB       │
+│   (Nginx)       │    │   (Node.js)     │    │   (Atlas)       │
+│   Port: 3001    │◄──►│   Port: 3000    │◄──►│   Cloud         │
+│   Container     │    │   Container     │    │   Database      │
+└─────────────────┘    └─────────────────┘    └─────────────────┘
+```
 
-## 🛠️ Cài đặt
+## 🚀 Quick Start
 
-### 1. Clone repository
+### **Local Development:**
+
 ```bash
-git clone https://github.com/AnhBoHelloTeam/NT-project.git
+# Clone repository
+git clone https://github.com/your-username/NT-project.git
 cd NT-project
+
+# Start with Docker
+docker-compose up -d --build
+
+# Access application
+# Frontend: http://localhost:3001
+# Backend: http://localhost:3000
 ```
 
-### 2. Cài đặt dependencies
-```bash
-npm install
-```
+### **Deploy to Render:**
 
-### 3. Chạy development
-```bash
-npm run dev
-```
+1. **Follow the guide:** [RENDER-DEPLOYMENT-GUIDE.md](RENDER-DEPLOYMENT-GUIDE.md)
+2. **Configure GitHub Actions**
+3. **Push code to trigger deployment**
 
-### 4. Build Docker image
-```bash
-docker build -t crud-app .
-```
+## 📱 Application URLs
 
-### 5. Chạy với Docker Compose
-```bash
-docker-compose up -d
-```
+### **Local Development:**
+- **Frontend:** http://localhost:3001
+- **Backend API:** http://localhost:3000
+- **Health Check:** http://localhost:3000/health
+- **Test Dashboard:** http://localhost:3001/test-dashboard.html
 
-## 🔧 Cấu hình CI/CD
+### **Production (Render):**
+- **Frontend:** https://your-frontend-url.onrender.com
+- **Backend API:** https://your-backend-url.onrender.com
+- **Health Check:** https://your-backend-url.onrender.com/health
 
-### 1. Thiết lập GitHub Secrets
+## 🔧 API Endpoints
 
-Vào repository GitHub > Settings > Secrets and variables > Actions, thêm các secrets sau:
-
-- `DOCKER_USERNAME`: Tên đăng nhập Docker Hub
-- `DOCKER_PASSWORD`: Mật khẩu Docker Hub
-- `SERVER_HOST`: IP của EC2 instance
-- `SERVER_USERNAME`: Username của EC2 (thường là `ubuntu`)
-- `SERVER_SSH_KEY`: Nội dung file .pem key
-
-### 2. Cấu hình EC2
-
-#### Tạo EC2 instance:
-- OS: Ubuntu 20.04/22.04
-- Instance type: t2.micro (free tier)
-- Security Group: Mở port 22 (SSH), 80 (HTTP), 443 (HTTPS)
-
-#### Cài đặt Docker trên EC2:
-```bash
-# SSH vào EC2
-ssh -i your-key.pem ubuntu@your-ec2-ip
-
-# Cài đặt Docker
-sudo apt update
-sudo apt install -y docker.io
-sudo systemctl start docker
-sudo systemctl enable docker
-sudo usermod -aG docker ubuntu
-
-# Cài đặt Docker Compose
-sudo curl -L "https://github.com/docker/compose/releases/download/v2.20.0/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
-sudo chmod +x /usr/local/bin/docker-compose
-
-# Logout và login lại
-exit
-```
-
-### 3. Push code lên GitHub
-
-```bash
-git add .
-git commit -m "Setup CI/CD pipeline"
-git push origin main
-```
-
-## 📁 Cấu trúc project
-
-```
-NT-project/
-├── .github/
-│   └── workflows/
-│       └── deploy.yml          # GitHub Actions workflow
-├── public/                     # Frontend files
-│   ├── index.html
-│   ├── script.js
-│   └── style.css
-├── server.js                   # Backend API
-├── package.json               # Node.js dependencies
-├── Dockerfile                 # Docker configuration
-├── docker-compose.yml         # Docker Compose config
-└── README.md                  # Documentation
-```
-
-## 🔄 CI/CD Pipeline
-
-Khi push code lên branch `main`, GitHub Actions sẽ:
-
-1. **Build**: Build Docker image
-2. **Test**: Chạy tests (nếu có)
-3. **Push**: Push image lên Docker Hub
-4. **Deploy**: Deploy lên EC2 server
-5. **Verify**: Kiểm tra health check
-
-## 🌐 API Endpoints
-
-- `GET /api/products` - Lấy danh sách sản phẩm
-- `GET /api/products/:id` - Lấy chi tiết sản phẩm
-- `POST /api/products` - Tạo sản phẩm mới
-- `PUT /api/products/:id` - Cập nhật sản phẩm
-- `DELETE /api/products/:id` - Xóa sản phẩm
-- `GET /health` - Health check
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/api/products` | Get all products |
+| GET | `/api/products/:id` | Get product by ID |
+| POST | `/api/products` | Create new product |
+| PUT | `/api/products/:id` | Update product |
+| DELETE | `/api/products/:id` | Delete product |
+| GET | `/health` | Health check |
 
 ## 🐳 Docker Commands
 
 ```bash
-# Build image
-docker build -t crud-app .
-
-# Run container
-docker run -p 3000:3000 crud-app
-
-# Run với Docker Compose
-docker-compose up -d
+# Build and start all services
+docker-compose up -d --build
 
 # View logs
 docker-compose logs -f
 
-# Stop containers
+# Stop services
 docker-compose down
+
+# Restart services
+docker-compose restart
 ```
 
-## 🔍 Troubleshooting
+## 🔄 CI/CD Pipeline
 
-### Kiểm tra deployment:
+GitHub Actions automatically:
+- ✅ Run tests
+- ✅ Build Docker images
+- ✅ Push to Docker Hub
+- ✅ Deploy to Render
+
+## 🧪 Testing
+
+### **Test Dashboard:**
+- Access: http://localhost:3001/test-dashboard.html
+- Features: API testing, health checks, deployment status
+
+### **Manual Testing:**
 ```bash
-# SSH vào EC2
-ssh -i your-key.pem ubuntu@your-ec2-ip
+# Test API endpoints
+curl http://localhost:3000/health
+curl http://localhost:3000/api/products
 
-# Kiểm tra containers
-docker ps
-
-# Xem logs
-docker-compose logs
-
-# Kiểm tra health
-curl http://localhost/health
+# Test CRUD operations
+curl -X POST http://localhost:3000/api/products \
+  -H "Content-Type: application/json" \
+  -d '{"name":"Test Product","price":100000,"description":"Test Description","category":"Electronics"}'
 ```
 
-### GitHub Actions logs:
-- Vào repository > Actions tab
-- Click vào workflow run để xem logs chi tiết
+## 📊 Project Structure
 
-## 📝 Notes
+```
+NT-project/
+├── backend/                 # Backend API
+│   ├── controllers/         # API controllers
+│   ├── models/             # Database models
+│   ├── routes/             # API routes
+│   ├── middleware/         # Express middleware
+│   └── __tests__/          # Unit tests
+├── frontend/               # Frontend application
+│   ├── index.html          # Main page
+│   ├── script.js           # Frontend logic
+│   ├── style.css           # Styling
+│   └── test-dashboard.html # Test interface
+├── database/               # Database initialization
+├── .github/workflows/      # GitHub Actions
+├── docker-compose.yml      # Docker configuration
+└── render.yaml            # Render deployment config
+```
 
-- Ứng dụng chạy trên port 3000 trong container
-- EC2 expose port 80 để truy cập từ internet
-- Health check endpoint: `/health`
-- Auto restart container khi crash
+## 🛠️ Development
+
+### **Prerequisites:**
+- Node.js 18+
+- Docker & Docker Compose
+- MongoDB Atlas account
+- GitHub account
+
+### **Environment Variables:**
+```bash
+NODE_ENV=development
+PORT=3000
+MONGODB_URI=mongodb+srv://username:password@cluster.mongodb.net/database
+FRONTEND_URL=http://localhost:3001
+```
+
+## 📚 Documentation
+
+- **Deployment Guide:** [RENDER-DEPLOYMENT-GUIDE.md](RENDER-DEPLOYMENT-GUIDE.md)
+- **Project Summary:** [PROJECT-SUMMARY.md](PROJECT-SUMMARY.md)
+- **Testing Guide:** [TESTING.md](TESTING.md)
 
 ## 🤝 Contributing
 
-1. Fork repository
-2. Tạo feature branch
-3. Commit changes
-4. Push lên branch
-5. Tạo Pull Request
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Add tests
+5. Submit a pull request
 
 ## 📄 License
 
-MIT License
+This project is licensed under the MIT License.
+
+## 🎉 Success Checklist
+
+- [ ] Application running locally
+- [ ] All CRUD operations working
+- [ ] MongoDB Atlas connected
+- [ ] Docker containers running
+- [ ] GitHub Actions passing
+- [ ] Deployed to Render
+- [ ] Test dashboard functional
+
+**Happy coding! 🚀**

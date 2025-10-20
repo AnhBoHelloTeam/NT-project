@@ -505,12 +505,18 @@
             try {
                 // Test health endpoint
                 const healthResponse = await fetch(`${API_BASE_URL}/health`);
+                if (!healthResponse.ok) {
+                    throw new Error(`Health check failed: ${healthResponse.status}`);
+                }
                 const healthData = await healthResponse.json();
                 
                 updateTestStatus('local', 'running', 50);
                 
                 // Test API endpoint
                 const apiResponse = await fetch(`${API_BASE_URL}/api/products`);
+                if (!apiResponse.ok) {
+                    throw new Error(`API test failed: ${apiResponse.status}`);
+                }
                 const apiData = await apiResponse.json();
                 
                 updateTestStatus('local', 'running', 75);
@@ -522,10 +528,10 @@
                 updateTestStatus('local', 'success', 100);
                 showResults('local', `
                     <strong>✅ Local Development Test Passed!</strong><br>
-                    • Health Check: ${healthData.message}<br>
-                    • API Products: ${apiData.data.length} products found<br>
+                    • Health Check: ${healthData.status || 'OK'}<br>
+                    • API Products: ${apiData.data ? apiData.data.length : 0} products found<br>
                     • Web Interface: ${webData.length} characters loaded<br>
-                    • Server Uptime: ${healthData.uptime}s
+                    • Server Uptime: ${healthData.uptime || 'N/A'}s
                 `, true);
                 
             } catch (error) {
@@ -593,6 +599,11 @@
                     
                     try {
                         const response = await fetch(test.url);
+                        
+                        if (!response.ok) {
+                            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                        }
+                        
                         const data = await response.json();
                         
                         if (response.ok) {

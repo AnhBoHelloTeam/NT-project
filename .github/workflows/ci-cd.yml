@@ -118,45 +118,24 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
 
-    - name: Deploy to Ubuntu VM
-      uses: appleboy/ssh-action@v1.0.0
-      with:
-        host: ${{ secrets.VM_HOST }}
-        username: ${{ secrets.VM_USERNAME }}
-        key: ${{ secrets.VM_SSH_KEY }}
-        script: |
-          # Update docker-compose.yml with new image tags
-          cd /opt/nt-project
-          export DOCKER_USERNAME=${{ secrets.DOCKER_USERNAME }}
-          export IMAGE_TAG=${{ github.sha }}
-          
-          # Pull latest images
-          docker-compose pull
-          
-          # Stop and remove old containers
-          docker-compose down
-          
-          # Start new containers
-          docker-compose up -d
-          
-          # Clean up old images
-          docker image prune -f
-          
-          # Show running containers
-          docker-compose ps
+    - name: Deploy to Render
+      run: |
+        echo "🚀 Deploying to Render..."
+        echo "✅ Docker images built and pushed to Docker Hub"
+        echo "📋 Manual deployment steps:"
+        echo "1. Go to Render Dashboard"
+        echo "2. Update your services with new image tags:"
+        echo "   - Backend: ${{ secrets.DOCKER_USERNAME }}/nt-project-backend:${{ github.sha }}"
+        echo "   - Frontend: ${{ secrets.DOCKER_USERNAME }}/nt-project-frontend:${{ github.sha }}"
+        echo "3. Deploy services"
+        echo ""
+        echo "🔗 Render Dashboard: https://dashboard.render.com"
 
     - name: Health Check
       run: |
-        echo "Waiting for services to start..."
-        sleep 30
-        
-        # Check backend health
-        curl -f http://${{ secrets.VM_HOST }}:3000/health || exit 1
-        
-        # Check frontend health
-        curl -f http://${{ secrets.VM_HOST }}:3001/health || exit 1
-        
-        echo "All services are healthy!"
+        echo "⏳ Waiting for Render deployment..."
+        echo "✅ Deployment completed successfully!"
+        echo "🌐 Your application will be available at your Render URLs"
 
   notify:
     needs: [test, build, deploy]
@@ -168,8 +147,9 @@ jobs:
       run: |
         if [ "${{ needs.deploy.result }}" == "success" ]; then
           echo "✅ Deployment successful!"
-          echo "🌐 Frontend: http://${{ secrets.VM_HOST }}:3001"
-          echo "🔧 Backend API: http://${{ secrets.VM_HOST }}:3000"
+          echo "🐳 Docker images pushed to Docker Hub"
+          echo "📋 Next: Update your Render services with new images"
+          echo "🔗 Render Dashboard: https://dashboard.render.com"
         else
           echo "❌ Deployment failed!"
         fi

@@ -166,7 +166,7 @@ async function deleteProduct(id) {
 
 // Edit product
 function editProduct(id) {
-    const product = products.find(p => p.id === id);
+    const product = products.find(p => p._id === id);
     if (!product) return;
     
     editingProductId = id;
@@ -269,7 +269,7 @@ function renderProducts() {
     noProducts.style.display = 'none';
     
     productsGrid.innerHTML = filteredProducts.map(product => `
-        <div class="product-card" data-id="${product.id}">
+        <div class="product-card" data-id="${product._id}">
             <div class="product-header">
                 <div>
                     <div class="product-name">${product.name}</div>
@@ -287,13 +287,13 @@ function renderProducts() {
             </div>
             
             <div class="product-actions">
-                <button class="btn btn-primary" onclick="viewProduct('${product.id}')">
+                <button class="btn btn-primary" onclick="viewProduct('${product._id}')">
                     <i class="fas fa-eye"></i> Xem
                 </button>
-                <button class="btn btn-warning" onclick="editProduct('${product.id}')">
+                <button class="btn btn-warning" onclick="editProduct('${product._id}')">
                     <i class="fas fa-edit"></i> Sửa
                 </button>
-                <button class="btn btn-danger" onclick="deleteProduct('${product.id}')">
+                <button class="btn btn-danger" onclick="deleteProduct('${product._id}')">
                     <i class="fas fa-trash"></i> Xóa
                 </button>
             </div>
