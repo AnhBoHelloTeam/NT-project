@@ -10,8 +10,7 @@ services:
         value: production
       - key: PORT
         value: 3000
+    # Build backend service using its own Dockerfile and context
+    dockerfilePath: ./backend/Dockerfile
+    dockerContext: ./backend
     dockerCommand: "node server.js"
-    # If you prefer to let Render build from Dockerfile in repo
-    # Specify the Dockerfile location
-    dockerfilePath: ./Dockerfile
-    # Expose port 3000 inside container; Render routes via HTTP(S)
