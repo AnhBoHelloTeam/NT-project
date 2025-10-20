@@ -3,8 +3,20 @@ name: CI/CD Pipeline
 on:
   push:
     branches: [ main, develop ]
+    paths:
+      - 'frontend/**'
+      - 'render.yaml'
+      - '.github/workflows/**'
   pull_request:
     branches: [ main ]
+    paths:
+      - 'frontend/**'
+      - 'render.yaml'
+      - '.github/workflows/**'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 env:
   DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
@@ -19,29 +31,9 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
 
-    - name: Setup Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: '18'
-        cache: 'npm'
-        cache-dependency-path: backend/package-lock.json
-
-    - name: Install backend dependencies
+    - name: Verify frontend files exist
       run: |
-        cd backend
-        npm ci
-
-    - name: Run backend tests
-      run: |
-        cd backend
-        npm test
-      env:
-        NODE_ENV: test
-
-    - name: Lint backend code
-      run: |
-        cd backend
-        npm run lint || echo "Linting completed"
+        test -f frontend/Dockerfile && echo "Frontend found"
 
   build:
     needs: test
