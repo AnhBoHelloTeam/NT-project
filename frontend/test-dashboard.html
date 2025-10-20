@@ -443,6 +443,11 @@
     </div>
 
     <script>
+        // API Configuration
+        const API_BASE_URL = window.location.hostname === 'localhost' 
+            ? 'http://localhost:3000' 
+            : 'http://backend:3000';
+
         // Global variables
         let testResults = {
             local: { status: 'pending', progress: 0 },
@@ -499,13 +504,13 @@
             
             try {
                 // Test health endpoint
-                const healthResponse = await fetch('/health');
+                const healthResponse = await fetch(`${API_BASE_URL}/health`);
                 const healthData = await healthResponse.json();
                 
                 updateTestStatus('local', 'running', 50);
                 
                 // Test API endpoint
-                const apiResponse = await fetch('/api/products');
+                const apiResponse = await fetch(`${API_BASE_URL}/api/products`);
                 const apiData = await apiResponse.json();
                 
                 updateTestStatus('local', 'running', 75);
@@ -574,9 +579,9 @@
             
             try {
                 const tests = [
-                    { name: 'Health Check', url: '/health', method: 'GET' },
-                    { name: 'Get Products', url: '/api/products', method: 'GET' },
-                    { name: 'API Info', url: '/api', method: 'GET' }
+                    { name: 'Health Check', url: `${API_BASE_URL}/health`, method: 'GET' },
+                    { name: 'Get Products', url: `${API_BASE_URL}/api/products`, method: 'GET' },
+                    { name: 'API Info', url: `${API_BASE_URL}/api`, method: 'GET' }
                 ];
                 
                 let results = '<strong>✅ API Tests Results:</strong><br>';
