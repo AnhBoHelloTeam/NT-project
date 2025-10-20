@@ -14,17 +14,6 @@ env:
 jobs:
   test:
     runs-on: ubuntu-latest
-    
-    services:
-      mongodb:
-        image: mongo:7.0
-        ports:
-          - 27017:27017
-        options: >-
-          --health-cmd "mongosh --eval 'db.adminCommand(\"ping\")'"
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
 
     steps:
     - name: Checkout code
@@ -47,7 +36,6 @@ jobs:
         cd backend
         npm test
       env:
-        MONGODB_URI: mongodb://localhost:27017/nt_project_test
         NODE_ENV: test
 
     - name: Lint backend code
