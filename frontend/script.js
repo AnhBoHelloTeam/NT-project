@@ -68,7 +68,7 @@ function setupEventListeners() {
 // API Configuration
 const API_BASE_URL = window.location.hostname === 'localhost' 
     ? 'http://localhost:3000' 
-    : 'http://backend:3000';
+    : 'https://nt-projectbe.onrender.com';
 
 // API functions
 async function apiCall(url, options = {}) {
