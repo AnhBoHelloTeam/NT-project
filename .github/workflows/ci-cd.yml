@@ -59,17 +59,7 @@ jobs:
 
     # Skip Docker Hub login to avoid external dependency during outages
 
-    - name: Build backend image (no push)
-      uses: docker/build-push-action@v5
-      with:
-        context: ./backend
-        file: ./backend/Dockerfile
-        push: false
-        tags: |
-          nt-project-backend:ci
-        cache-from: type=gha
-        cache-to: type=gha,mode=max
-
+    # Build frontend only for CI
     - name: Build frontend image (no push)
       uses: docker/build-push-action@v5
       with:
@@ -92,13 +82,13 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
 
-    - name: Deploy to Render
+    - name: Deploy to Render (frontend only)
       run: |
         echo "🚀 Deploying to Render..."
-        echo "✅ CI built images locally (no push)"
-        echo "📋 Render will build from your repo Dockerfile (render.yaml)"
+        echo "✅ CI built frontend image locally (no push)"
+        echo "📋 Render will build frontend from ./frontend Dockerfile via render.yaml"
         echo "1. Go to Render Dashboard"
-        echo "2. Ensure service builds from repo"
+        echo "2. Ensure service builds from repo (frontend only)"
         echo "3. Trigger deploy"
         echo ""
         echo "🔗 Render Dashboard: https://dashboard.render.com"

@@ -1,6 +1,6 @@
 services:
   - type: web
-    name: nt-crud-app
+    name: nt-crud-frontend
     env: docker
     plan: free
     autoDeploy: true
@@ -9,8 +9,7 @@ services:
       - key: NODE_ENV
         value: production
       - key: PORT
-        value: 3000
-    # Build backend service using its own Dockerfile and context
-    dockerfilePath: ./backend/Dockerfile
-    dockerContext: ./backend
-    dockerCommand: "node server.js"
+        value: 80
+    # Build frontend only using its Dockerfile and context
+    dockerfilePath: ./frontend/Dockerfile
+    dockerContext: ./frontend
