@@ -1,15 +1,12 @@
 services:
-  - type: web
+  - type: static
     name: nt-crud-frontend
-    env: docker
+    env: static
     plan: free
     autoDeploy: true
-    healthCheckPath: /health
-    envVars:
-      - key: NODE_ENV
-        value: production
-      - key: PORT
-        value: 80
-    # Build frontend only using its Dockerfile and context
-    dockerfilePath: ./frontend/Dockerfile
-    dockerContext: ./frontend
+    buildCommand: ""
+    staticPublishPath: ./frontend
+    routes:
+      - type: rewrite
+        source: /health
+        destination: /index.html
