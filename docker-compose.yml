@@ -1,26 +1,26 @@
 version: '3.8'
 
 services:
-  # MongoDB Database
-  mongo:
-    image: mongo:7.0
-    container_name: nt-project-mongo
-    environment:
-      - MONGO_INITDB_DATABASE=nt_project
-    ports:
-      - "27017:27017"
-    volumes:
-      - mongo_data:/data/db
-      - ./database/init:/docker-entrypoint-initdb.d
-    networks:
-      - app-network
-    restart: always
-    healthcheck:
-      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 40s
+  # MongoDB Database (Atlas)
+  # mongo:
+  #   image: mongo:7.0
+  #   container_name: nt-project-mongo
+  #   environment:
+  #     - MONGO_INITDB_DATABASE=nt_project
+  #   ports:
+  #     - "27017:27017"
+  #   volumes:
+  #     - mongo_data:/data/db
+  #     - ./database/init:/docker-entrypoint-initdb.d
+  #   networks:
+  #     - app-network
+  #   restart: always
+  #   healthcheck:
+  #     test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+  #     interval: 30s
+  #     timeout: 10s
+  #     retries: 3
+  #     start_period: 40s
 
   # Backend API
   backend:
@@ -32,13 +32,13 @@ services:
     environment:
       - NODE_ENV=production
       - PORT=3000
-      - MONGODB_URI=mongodb://mongo:27017/nt_project
+      - MONGODB_URI=mongodb+srv://root:21082004@cluster0.oqhctgp.mongodb.net/nt_project?retryWrites=true&w=majority&appName=Cluster0
       - FRONTEND_URL=http://localhost:3001
     ports:
       - "3000:3000"
-    depends_on:
-      mongo:
-        condition: service_healthy
+    # depends_on:
+    #   mongo:
+    #     condition: service_healthy
     networks:
       - app-network
     restart: always
