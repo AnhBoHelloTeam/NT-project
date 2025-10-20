@@ -65,10 +65,16 @@ function setupEventListeners() {
     }
 }
 
+// API Configuration
+const API_BASE_URL = process.env.NODE_ENV === 'production' 
+    ? 'http://backend:3000' 
+    : 'http://localhost:3000';
+
 // API functions
 async function apiCall(url, options = {}) {
     try {
-        const response = await fetch(url, {
+        const fullUrl = url.startsWith('http') ? url : `${API_BASE_URL}${url}`;
+        const response = await fetch(fullUrl, {
             headers: {
                 'Content-Type': 'application/json',
                 ...options.headers

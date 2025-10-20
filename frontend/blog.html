@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blog CI/CD - NT Project</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .blog-container { max-width: 900px; margin: 0 auto; }
+        .blog-card { background: white; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); padding: 30px; }
+        .blog-title { font-size: 2rem; color: #2d3748; margin-bottom: 10px; }
+        .blog-sub { color: #718096; margin-bottom: 20px; }
+        .blog-section { margin: 24px 0; }
+        .blog-section h3 { color: #4a5568; margin-bottom: 10px; }
+        .blog-section p { color: #4a5568; line-height: 1.7; }
+        .code { background: #f7fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; font-size: 13px; overflow: auto; }
+        .back-link { display: inline-flex; align-items: center; gap: 8px; margin-bottom: 16px; color: #4a5568; text-decoration: none; }
+        .back-link:hover { text-decoration: underline; }
+        .note { background: #fefcbf; border: 1px solid #faf089; color: #744210; padding: 10px 12px; border-radius: 8px; }
+        .list { margin-left: 18px; }
+        .inline-code { background:#edf2f7; padding:2px 6px; border-radius:4px; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; font-size: 13px; }
+    </style>
+</head>
+<body>
+    <div class="container blog-container">
+        <a href="index.html" class="back-link"><i class="fas fa-arrow-left"></i> Quay lại trang chính</a>
+        <div class="blog-card">
+            <h1 class="blog-title"><i class="fas fa-rocket"></i> CI/CD cho NT Project với Docker, GitHub Actions và Render</h1>
+            <p class="blog-sub">Bài viết hướng dẫn chi tiết từ thiết lập dự án, cấu hình CI, build Docker, đến triển khai và kiểm thử.</p>
+
+            <div class="blog-section">
+                <h3>1) Mục tiêu & Yêu cầu</h3>
+                <ul class="list">
+                    <li>Tự động kiểm tra (CI) mỗi lần đẩy code</li>
+                    <li>Đóng gói ứng dụng với Docker để chạy nhất quán</li>
+                    <li>Triển khai thủ công trên <span class="inline-code">Render</span> (free), không cần thẻ</li>
+                </ul>
+                <p class="note">Yêu cầu: Node.js 18+, Docker Desktop (nếu build local), tài khoản GitHub, tài khoản Render (free).</p>
+            </div>
+
+            <div class="blog-section">
+                <h3>2) Cấu trúc dự án</h3>
+                <div class="code">.github/workflows/deploy.yml   # Workflow CI an toàn (không deploy)
+Dockerfile                     # Đóng gói app Node.js
+.dockerignore                  # Bỏ qua file không cần build
+docker-compose.yml             # Chạy nhanh local bằng compose
+public/                        # Giao diện CRUD
+server.js                      # API CRUD (Express)
+TESTING.md                     # Hướng dẫn kiểm thử chi tiết</div>
+            </div>
+
+            <div class="blog-section">
+                <h3>3) Thiết lập CI (GitHub Actions)</h3>
+                <p>Workflow <strong>CRUD App CI (safe)</strong> (có sẵn trong repo) gồm:</p>
+                <ul class="list">
+                    <li>Checkout code, setup Node 18, cache npm</li>
+                    <li>Cài dependencies (<span class="inline-code">npm ci</span>)</li>
+                    <li>Chạy test/lint nếu có (không bắt buộc)</li>
+                    <li>Đánh dấu thành công (luôn xanh khi không có test/lint)</li>
+                </ul>
+                <p><strong>Trigger CI</strong>:</p>
+                <div class="code">echo "trigger ci" >> ci-note.md
+git add ci-note.md
+git commit -m "chore: trigger CI"
+git push origin main</div>
+                <p><strong>Bật thêm Docker build/push (tuỳ chọn)</strong>:</p>
+                <ul class="list">
+                    <li>Thêm GitHub Secrets: <span class="inline-code">DOCKER_USERNAME</span>, <span class="inline-code">DOCKER_PASSWORD</span> (Docker Hub Access Token)</li>
+                    <li>Push commit mới để job Docker chạy</li>
+                </ul>
+            </div>
+
+            <div class="blog-section">
+                <h3>4) Docker hoá & kiểm thử tại máy</h3>
+                <p><strong>Build & Run</strong></p>
+                <div class="code"># Build image
+docker build -t crud-app:latest .
+
+# Run container
+docker run --name crud-app --rm -p 3000:3000 crud-app:latest
+
+# Health check
+curl http://localhost:3000/health</div>
+                <p><strong>docker-compose</strong></p>
+                <div class="code">docker-compose up -d
+curl http://localhost:3000/health
+docker-compose ps
+docker-compose down</div>
+                <p class="note">Image dùng base <span class="inline-code">node:18-alpine</span>, expose <span class="inline-code">3000</span>, có healthcheck tại <span class="inline-code">/health</span>.</p>
+            </div>
+
+            <div class="blog-section">
+                <h3>5) Triển khai thủ công lên Render (không Blueprints)</h3>
+                <p><strong>Cách A - Build từ GitHub repo (sử dụng Dockerfile)</strong></p>
+                <ol class="list">
+                    <li>Render → New → Web Service → Connect repo <span class="inline-code">AnhBoHelloTeam/NT-project</span></li>
+                    <li>Runtime: Auto-detect (Render tìm <span class="inline-code">Dockerfile</span>)</li>
+                    <li>Health Check Path: <span class="inline-code">/health</span></li>
+                    <li>Env: <span class="inline-code">NODE_ENV=production</span>, <span class="inline-code">PORT=3000</span></li>
+                    <li>Create → chờ trạng thái "Live"</li>
+                </ol>
+                <p><strong>Cách B - Dùng image từ Docker Hub</strong></p>
+                <ol class="list">
+                    <li>Đẩy image: <span class="inline-code">docker build -t nhanng0808/crud-app:latest . && docker push nhanng0808/crud-app:latest</span></li>
+                    <li>Render → New → Web Service → Public Docker Image</li>
+                    <li>Nhập image: <span class="inline-code">nhanng0808/crud-app:latest</span>, set env như trên</li>
+                </ol>
+                <p><strong>Kiểm thử</strong>:</p>
+                <div class="code"># Sau khi Live
+curl https://&lt;render-url&gt;/health  # expect 200 OK
+# Mở UI: https://&lt;render-url&gt;/</div>
+            </div>
+
+            <div class="blog-section">
+                <h3>6) Kiểm thử API & Giao diện</h3>
+                <p><strong>Local</strong>: http://localhost:3000</p>
+                <p><strong>Render</strong>: https://&lt;render-url&gt;/</p>
+                <p>CRUD qua Postman/cURL:</p>
+                <div class="code"># Danh sách
+curl http://localhost:3000/api/products
+
+# Tạo mới
+curl -X POST http://localhost:3000/api/products \
+  -H "Content-Type: application/json" \
+  -d '{"name":"Pen","price":5000,"description":"Blue pen","category":"Other"}'
+
+# Cập nhật (thay &lt;id&gt;)
+curl -X PUT http://localhost:3000/api/products/&lt;id&gt; \
+  -H "Content-Type: application/json" \
+  -d '{"name":"Pen Updated","price":6000,"description":"Blue pen updated","category":"Other"}'
+
+# Xoá
+curl -X DELETE http://localhost:3000/api/products/&lt;id&gt;</div>
+            </div>
+
+            <div class="blog-section">
+                <h3>7) Troubleshooting nhanh</h3>
+                <ul class="list">
+                    <li>Actions đỏ: đảm bảo chỉ còn workflow CI an toàn; xem log Install deps</li>
+                    <li>Docker build fail: thử <span class="inline-code">docker builder prune -f</span></li>
+                    <li>Render 404/502: xem Logs, đảm bảo env <span class="inline-code">PORT=3000</span> và Health Path <span class="inline-code">/health</span></li>
+                </ul>
+            </div>
+
+            <div class="blog-section">
+                <h3>8) Lộ trình nâng cấp</h3>
+                <ul class="list">
+                    <li>Thêm ESLint, Jest và siết CI fail nếu vi phạm</li>
+                    <li>Thêm job Docker build/push có điều kiện secrets</li>
+                    <li>Thêm Postman Collection và badge CI trong README</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,17 @@
+{
+  "name": "nt-project-frontend",
+  "version": "1.0.0",
+  "description": "Frontend for NT Project",
+  "main": "index.html",
+  "scripts": {
+    "start": "npx http-server -p 3001 -c-1",
+    "dev": "npx http-server -p 3001 -c-1 -o",
+    "build": "echo 'Frontend build completed'"
+  },
+  "keywords": ["frontend", "html", "css", "javascript"],
+  "author": "Your Name",
+  "license": "MIT",
+  "devDependencies": {
+    "http-server": "^14.1.1"
+  }
+}
